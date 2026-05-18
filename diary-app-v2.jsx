@@ -539,7 +539,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
                 })}
                 <div style={{flex:1}}/>
                 <span style={{fontSize:9,color:th.accent,opacity:0.4}}>⏰</span>
-                <input type="time" value={fixedAlarms[item]||""} onChange={e=>onSetFixedAlarm(item,e.target.value)}
+                <input type="text" value={fixedAlarms[item]||""} onChange={e=>onSetFixedAlarm(item,e.target.value)}
                   style={{fontSize:10,border:`1px solid ${th.border}`,borderRadius:6,padding:"2px 6px",background:th.bookBg,color:th.accent,fontFamily:"inherit",outline:"none"}}/>
               </div>
             </div>
@@ -576,7 +576,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
             </div>
             <div style={{display:"flex",alignItems:"center",padding:"7px 14px",background:th.accentSoft,borderTop:`1px solid ${th.borderLight}`,gap:4}}>
               <span style={{fontSize:9,color:th.accent,opacity:0.4}}>⏰ 10분 전 알람</span>
-              <input type="time" value={(dayData.extraAlarms||{})[idx]||""} onChange={e=>onSetExtraAlarm(idx,e.target.value)}
+              <input type="text" value={(dayData.extraAlarms||{})[idx]||""} onChange={e=>onSetExtraAlarm(idx,e.target.value)}
                 style={{fontSize:10,border:`1px solid ${th.border}`,borderRadius:6,padding:"2px 6px",background:th.bookBg,color:th.accent,fontFamily:"inherit",outline:"none",marginLeft:"auto"}}/>
             </div>
           </div>
@@ -1233,7 +1233,7 @@ export default function DiaryApp() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         @keyframes slideIn{from{opacity:0;transform:translateX(20px) scale(0.97)}to{opacity:1;transform:translateX(0) scale(1)}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        input[type="time"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
+        input[type="text"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
         *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
         ::-webkit-scrollbar{display:none}
         body{font-family:'Noto Sans KR','DM Sans',sans-serif}
