@@ -1381,7 +1381,7 @@ export default function DiaryApp() {
             {/* 시간 */}
             <div style={{marginBottom:10}}>
               <div style={{fontSize:11,color:th.accent,marginBottom:4,opacity:0.7}}>🕐 시간 <span style={{opacity:0.5}}>(설정 시 알람 🔔)</span></div>
-              <input type="time" value={newEventTime} onChange={e=>setNewEventTime(e.target.value)} style={{width:"100%",padding:"10px 14px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,fontFamily:"inherit",color:th.accent,outline:"none",boxSizing:"border-box"}}/>
+              <input type="text" placeholder="예: 14:30" value={newEventTime} onChange={e=>setNewEventTime(e.target.value)} style={{width:"100%",padding:"10px 14px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,fontFamily:"inherit",color:th.accent,outline:"none",boxSizing:"border-box"}}/>
             </div>
 
             {/* 장소 */}
