@@ -971,10 +971,7 @@ export default function DiaryApp() {
     const ref = doc(db, "users", user.uid, "appData", "main");
 
     // Firestore → 앱 (최초 1회만 로드, 이후는 앱→Firestore 방향)
-    let initialLoad = true;
-    const unsub = onSnapshot(ref, snap => {
-      if(!initialLoad) return; // 최초 1회만 받음
-      initialLoad = false;
+const unsub = onSnapshot(ref, snap => {
       if(snap.exists()){
         const d = snap.data();
         // 데이터가 실제로 있을 때만 덮어씀
