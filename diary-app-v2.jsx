@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDI2rlZvBRIytsrziXxxI3hsHtlft-xots",
@@ -972,19 +972,13 @@ export default function DiaryApp() {
     return () => unsub();
   }, []);
 
-  // ── Firestore 실시간 동기화 ──
+  // ── Firestore 로그인 시 1회 읽기 (실시간 동기화 제거) ──
   useEffect(()=>{
     if(!user) return;
     const ref = doc(db, "users", user.uid, "appData", "main");
-
-    // Firestore → 앱 (최초 1회만 로드, 이후는 앱→Firestore 방향)
-    let initialLoad = true;
-    const unsub = onSnapshot(ref, snap => {
-      if(!initialLoad) return; // 최초 1회만 받음
-      initialLoad = false;
+    getDoc(ref).then(snap => {
       if(snap.exists()){
         const d = snap.data();
-        // 데이터가 실제로 있을 때만 덮어씀
         if(d.data && Object.keys(JSON.parse(d.data)).length > 0)
           setData(JSON.parse(d.data));
         if(d.fixedTodos && JSON.parse(d.fixedTodos).length > 0)
@@ -992,8 +986,7 @@ export default function DiaryApp() {
         if(d.fixedDays)  setFixedDays(JSON.parse(d.fixedDays));
         if(d.fixedAlarms)setFixedAlarms(JSON.parse(d.fixedAlarms));
       }
-    });
-    return () => unsub();
+    }).catch(e=>console.error("Firestore 읽기 실패", e));
   }, [user]);
 
   // ── 앱 → Firestore (데이터 변경 시 저장) ──
