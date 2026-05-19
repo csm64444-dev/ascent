@@ -278,10 +278,11 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                     <div
                       onClick={e=>{e.stopPropagation();updateDayDone(idx);}}
                       style={{
-                        width:22,height:22,borderRadius:6,flexShrink:0,marginTop:2,cursor:"pointer",
+                        width:32,height:32,borderRadius:8,flexShrink:0,cursor:"pointer",
                         border:`2px solid ${(dayData.eventDone||{})[idx]?"#1a1a1a":th.border}`,
                         background:(dayData.eventDone||{})[idx]?"#1a1a1a":"transparent",
                         display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
+                        touchAction:"manipulation",
                       }}
                     >
                       {(dayData.eventDone||{})[idx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
@@ -1489,7 +1490,7 @@ export default function DiaryApp() {
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setShowEventModal(false)} style={{flex:1,padding:"11px",background:"transparent",color:th.accent,border:`1px solid ${th.border}`,borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,opacity:0.7}}>취소</button>
 
-              <button onClick={addEvent} style={{flex:2,padding:"11px",background:th.accent,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:600,boxShadow:`0 4px 16px rgba(${th.accentRgb},0.35)`}}>{editingEventIdx!==null?"수정하기":"추가하기"}</button>
+              <button onClick={addEvent} style={{flex:2,padding:"14px",background:th.accent,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,boxShadow:`0 4px 16px rgba(${th.accentRgb},0.35)`,touchAction:"manipulation",minHeight:48}}>{editingEventIdx!==null?"수정하기":"추가하기"}</button>
             </div>
           </div>
         </div>
