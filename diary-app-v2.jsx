@@ -276,14 +276,14 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                 }}>
                   {snap===1&&(
                     <div
-                      onClick={e=>{e.stopPropagation();e.preventDefault();updateDayDone(idx);}}
-                      onTouchEnd={e=>{e.stopPropagation();e.preventDefault();updateDayDone(idx);}}
+                      onPointerDown={e=>{e.stopPropagation();e.preventDefault();updateDayDone(idx);}}
                       style={{
                         width:22,height:22,borderRadius:6,flexShrink:0,marginTop:2,cursor:"pointer",
                         border:`2px solid ${(dayData.eventDone||{})[idx]?"#1a1a1a":th.border}`,
                         background:(dayData.eventDone||{})[idx]?"#1a1a1a":"transparent",
                         display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
                         touchAction:"manipulation",WebkitTapHighlightColor:"transparent",
+                        userSelect:"none",
                       }}
                     >
                       {(dayData.eventDone||{})[idx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
@@ -496,7 +496,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
             }}>
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background:isDone?th.todoDone:th.headerBg,transition:"background .2s"}}>
                 {/* 커스텀 체크박스 */}
-                <div onClick={()=>isActiveToday&&onToggleFixed(item)} style={{
+                <div onPointerDown={e=>{e.preventDefault();isActiveToday&&onToggleFixed(item);}} style={{
                   width:20,height:20,borderRadius:6,flexShrink:0,cursor:isActiveToday?"pointer":"not-allowed",
                   border:`2px solid ${isDone?th.accent:th.border}`,
                   background:isDone?th.accent:"transparent",
@@ -528,7 +528,8 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
                 {["일","월","화","수","목","금","토"].map((d,di)=>{
                   const active=days.includes(di);
                   return (
-                    <button key={di} onClick={()=>{
+                    <button key={di} onPointerDown={e=>{
+                      e.preventDefault();
                       const next=active?days.filter(x=>x!==di):[...days,di].sort();
                       onSetFixedDays(item,next.length===7?[0,1,2,3,4,5,6]:next);
                     }} style={{
@@ -567,7 +568,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
         {(dayData.extraTodos||[]).map((item,idx)=>(
           <div key={idx} style={{borderRadius:14,overflow:"hidden",background:th.headerBg,border:`1px solid ${th.borderLight}`,boxShadow:`0 1px 6px rgba(${th.accentRgb},0.05)`}}>
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background:dayData.extraDone[idx]?th.todoDone:th.headerBg,transition:"background .2s"}}>
-              <div onClick={()=>onToggleExtra(idx)} style={{
+              <div onPointerDown={e=>{e.preventDefault();onToggleExtra(idx);}} style={{
                 width:20,height:20,borderRadius:6,flexShrink:0,cursor:"pointer",
                 border:`2px solid ${dayData.extraDone[idx]?th.accent:th.border}`,
                 background:dayData.extraDone[idx]?th.accent:"transparent",
@@ -616,6 +617,7 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
   const lastPt     = useRef(null);
   const strokePts  = useRef([]);
   const historyRef = useRef([]);
+  const composingRef = useRef(false);
 
   useEffect(()=>{ if(extMode) setMode(extMode); },[extMode]);
 
@@ -814,7 +816,10 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
           <div style={{position:"absolute",bottom:10,right:10,fontSize:70,opacity:0.04,pointerEvents:"none",userSelect:"none",zIndex:0}}>{th.emoji}</div>
           {/* textarea: static 배치로 높이 자동 늘어남 */}
           <textarea
-            value={note||""} onChange={e=>onNoteChange(e.target.value)}
+            value={note||""}
+            onChange={e=>{ if(!composingRef.current) onNoteChange(e.target.value); }}
+            onCompositionStart={()=>{ composingRef.current=true; }}
+            onCompositionEnd={e=>{ composingRef.current=false; onNoteChange(e.target.value); }}
             placeholder="오늘의 기록을 남겨보세요..."
             style={{
               display:"block",width:"100%",minHeight:"100vh",
@@ -824,8 +829,6 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
               padding:"10px 16px 120px",boxSizing:"border-box",
               pointerEvents:isDrawMode?"none":"auto",
               position:"relative",zIndex:1,
-              WebkitUserSelect:"text",userSelect:"text",
-              wordBreak:"break-all",overflowWrap:"break-word",
             }}
           />
           {/* 캔버스: innerRef와 동일 크기로 오버레이 */}
