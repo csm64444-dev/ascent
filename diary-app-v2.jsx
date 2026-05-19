@@ -275,18 +275,18 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                   opacity:(dayData.eventDone||{})[idx]?0.45:1,
                 }}>
                   {snap===1&&(
-                    <div
+                    <button
                       onClick={e=>{e.stopPropagation();updateDayDone(idx);}}
                       style={{
                         width:32,height:32,borderRadius:8,flexShrink:0,cursor:"pointer",
                         border:`2px solid ${(dayData.eventDone||{})[idx]?"#1a1a1a":th.border}`,
                         background:(dayData.eventDone||{})[idx]?"#1a1a1a":"transparent",
                         display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
-                        touchAction:"manipulation",
+                        touchAction:"manipulation",padding:0,
                       }}
                     >
                       {(dayData.eventDone||{})[idx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
-                    </div>
+                    </button>
                   )}
                   <div onClick={()=>openEditEvent(idx)} style={{flex:1,display:"flex",gap:14,cursor:"pointer",minWidth:0}}>
                     <div style={{width:44,flexShrink:0,textAlign:"right",paddingTop:2}}>
