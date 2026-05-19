@@ -760,8 +760,8 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
   return (
     <div
       style={{display:"flex",flexDirection:"column",height:"100%",background:th.cellBg}}
-      onTouchStart={e=>e.stopPropagation()}
-      onTouchEnd={e=>e.stopPropagation()}
+      onTouchStart={e=>{if(isDrawMode)e.stopPropagation();}}
+      onTouchEnd={e=>{if(isDrawMode)e.stopPropagation();}}
     >
       {/* 헤더 + 툴바 */}
       <div style={{padding:"14px 16px 0",flexShrink:0}}>
@@ -989,43 +989,54 @@ export default function DiaryApp() {
     }).catch(e=>console.error("Firestore 읽기 실패", e));
   }, [user]);
 
-  // ── 앱 → Firestore (데이터 변경 시 저장) ──
-  const syncToFirebase = useCallback(async (newData, newFixedTodos, newFixedDays, newFixedAlarms) => {
-    if(!user) return;
+  // ── 앱 → Firestore (ref 기반으로 렌더링 충돌 방지) ──
+  const dataRef = useRef(data);
+  const fixedTodosRef = useRef(fixedTodos);
+  const fixedDaysRef = useRef(fixedDays);
+  const fixedAlarmsRef = useRef(fixedAlarms);
+  const userRef = useRef(user);
+
+  useEffect(()=>{ dataRef.current = data; }, [data]);
+  useEffect(()=>{ fixedTodosRef.current = fixedTodos; }, [fixedTodos]);
+  useEffect(()=>{ fixedDaysRef.current = fixedDays; }, [fixedDays]);
+  useEffect(()=>{ fixedAlarmsRef.current = fixedAlarms; }, [fixedAlarms]);
+  useEffect(()=>{ userRef.current = user; }, [user]);
+
+  const syncToFirebase = useCallback(async () => {
+    const u = userRef.current;
+    if(!u) return;
     setSyncing(true);
     try {
-      const ref = doc(db, "users", user.uid, "appData", "main");
-      // drawData 제외하고 저장 (용량 절약)
+      const ref = doc(db, "users", u.uid, "appData", "main");
       const slim = {};
-      for(const [k,v] of Object.entries(newData||data)){
+      for(const [k,v] of Object.entries(dataRef.current)){
         const { drawData, ...rest } = v;
         slim[k] = rest;
       }
       await setDoc(ref, {
         data: JSON.stringify(slim),
-        fixedTodos: JSON.stringify(newFixedTodos||fixedTodos),
-        fixedDays:  JSON.stringify(newFixedDays||fixedDays),
-        fixedAlarms:JSON.stringify(newFixedAlarms||fixedAlarms),
+        fixedTodos: JSON.stringify(fixedTodosRef.current),
+        fixedDays:  JSON.stringify(fixedDaysRef.current),
+        fixedAlarms:JSON.stringify(fixedAlarmsRef.current),
         updatedAt: Date.now(),
       }, { merge: true });
     } catch(e){ console.error("동기화 실패", e); }
     setSyncing(false);
-  }, [user, data, fixedTodos, fixedDays, fixedAlarms]);
+  }, []);
 
   // 30분마다 Firebase 동기화
   useEffect(()=>{
     if(!user) return;
-    const t = setInterval(()=>syncToFirebase(data), 30*60*1000);
+    const t = setInterval(()=>syncToFirebase(), 30*60*1000);
     return ()=>clearInterval(t);
-  }, [user, syncToFirebase]);
+  }, [user]);
 
   // 앱 종료/탭 닫힐 때 즉시 저장
   useEffect(()=>{
-    if(!user) return;
-    const handleUnload = ()=>syncToFirebase(data);
+    const handleUnload = ()=>syncToFirebase();
     window.addEventListener("beforeunload", handleUnload);
     return ()=>window.removeEventListener("beforeunload", handleUnload);
-  }, [user, data, syncToFirebase]);
+  }, []);
 
   // localStorage 용량 체크
   useEffect(()=>{
