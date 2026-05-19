@@ -617,8 +617,23 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
   const lastPt     = useRef(null);
   const strokePts  = useRef([]);
   const historyRef = useRef([]);
+  const textareaRef = useRef(null);
 
   useEffect(()=>{ if(extMode) setMode(extMode); },[extMode]);
+
+  // note 변경 시 textarea DOM 직접 업데이트 (날짜 바뀔 때)
+  const lastNote = useRef(note);
+  useEffect(()=>{
+    if(textareaRef.current && lastNote.current !== note) {
+      lastNote.current = note;
+      // 커서 위치 보존
+      const el = textareaRef.current;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      el.value = note || "";
+      try { el.setSelectionRange(start, end); } catch(e) {}
+    }
+  }, [note]);
 
   // drawData 복원 - 날짜 바뀔 때만 (drawing 중에는 무시)
   const lastDrawData = useRef(drawData);
@@ -815,8 +830,12 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
           <div style={{position:"absolute",bottom:10,right:10,fontSize:70,opacity:0.04,pointerEvents:"none",userSelect:"none",zIndex:0}}>{th.emoji}</div>
           {/* textarea: static 배치로 높이 자동 늘어남 */}
           <textarea
-            value={note||""}
-            onChange={e=>onNoteChange(e.target.value)}
+            ref={textareaRef}
+            defaultValue={note||""}
+            onInput={e=>{
+              lastNote.current = e.target.value;
+              onNoteChange(e.target.value);
+            }}
             placeholder="오늘의 기록을 남겨보세요..."
             style={{
               display:"block",width:"100%",minHeight:"100vh",
