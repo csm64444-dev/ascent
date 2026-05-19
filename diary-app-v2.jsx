@@ -617,7 +617,6 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
   const lastPt     = useRef(null);
   const strokePts  = useRef([]);
   const historyRef = useRef([]);
-  const composingRef = useRef(false);
 
   useEffect(()=>{ if(extMode) setMode(extMode); },[extMode]);
 
@@ -817,9 +816,7 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
           {/* textarea: static 배치로 높이 자동 늘어남 */}
           <textarea
             value={note||""}
-            onChange={e=>{ if(!composingRef.current) onNoteChange(e.target.value); }}
-            onCompositionStart={()=>{ composingRef.current=true; }}
-            onCompositionEnd={e=>{ composingRef.current=false; onNoteChange(e.target.value); }}
+            onChange={e=>onNoteChange(e.target.value)}
             placeholder="오늘의 기록을 남겨보세요..."
             style={{
               display:"block",width:"100%",minHeight:"100vh",
