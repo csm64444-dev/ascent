@@ -808,7 +808,7 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
       {/* 편집 영역 */}
       <div ref={scrollRef} style={{flex:1,overflowY:"auto",scrollbarWidth:"none",margin:"0 16px 16px",borderRadius:10,border:`1px solid ${th.border}`,touchAction:isDrawMode?"none":"auto"}}>
         {/* innerRef: textarea 높이만큼 늘어남 → 캔버스도 동일 크기 */}
-        <div ref={innerRef} style={{position:"relative",touchAction:isDrawMode?"none":"auto"}}>
+        <div ref={innerRef} style={{position:"relative",touchAction:isDrawMode?"none":"pan-y"}}>
           {/* 워터마크 */}
           <div style={{position:"absolute",bottom:10,right:10,fontSize:70,opacity:0.04,pointerEvents:"none",userSelect:"none",zIndex:0}}>{th.emoji}</div>
           {/* textarea: static 배치로 높이 자동 늘어남 */}
@@ -824,6 +824,9 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
               padding:"10px 16px 120px",boxSizing:"border-box",
               pointerEvents:isDrawMode?"none":"auto",
               position:"relative",zIndex:1,
+              touchAction:"auto",
+              WebkitUserSelect:"text",
+              userSelect:"text",
             }}
           />
           {/* 캔버스: innerRef와 동일 크기로 오버레이 */}
