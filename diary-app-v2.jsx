@@ -1019,11 +1019,27 @@ export default function DiaryApp() {
     setSyncing(false);
   }, [user, data, fixedTodos, fixedDays, fixedAlarms]);
 
-  // data 변경 시 Firebase 동기화
-  useEffect(()=>{ if(user) syncToFirebase(data); }, [data]);
-  useEffect(()=>{ if(user) syncToFirebase(null, fixedTodos); }, [fixedTodos]);
-  useEffect(()=>{ if(user) syncToFirebase(null, null, fixedDays); }, [fixedDays]);
-  useEffect(()=>{ if(user) syncToFirebase(null, null, null, fixedAlarms); }, [fixedAlarms]);
+  // data 변경 시 Firebase 동기화 (3초 딜레이 - 즉시 실행시 렌더링 충돌)
+  useEffect(()=>{
+    if(!user) return;
+    const t = setTimeout(()=>syncToFirebase(data), 3000);
+    return ()=>clearTimeout(t);
+  }, [data, user]);
+  useEffect(()=>{
+    if(!user) return;
+    const t = setTimeout(()=>syncToFirebase(null, fixedTodos), 3000);
+    return ()=>clearTimeout(t);
+  }, [fixedTodos, user]);
+  useEffect(()=>{
+    if(!user) return;
+    const t = setTimeout(()=>syncToFirebase(null, null, fixedDays), 3000);
+    return ()=>clearTimeout(t);
+  }, [fixedDays, user]);
+  useEffect(()=>{
+    if(!user) return;
+    const t = setTimeout(()=>syncToFirebase(null, null, null, fixedAlarms), 3000);
+    return ()=>clearTimeout(t);
+  }, [fixedAlarms, user]);
 
   // localStorage 용량 체크
   useEffect(()=>{
