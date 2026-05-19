@@ -282,8 +282,6 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                         border:`2px solid ${(dayData.eventDone||{})[idx]?"#1a1a1a":th.border}`,
                         background:(dayData.eventDone||{})[idx]?"#1a1a1a":"transparent",
                         display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
-                        touchAction:"manipulation",WebkitTapHighlightColor:"transparent",
-                        userSelect:"none",minWidth:22,minHeight:22,
                       }}
                     >
                       {(dayData.eventDone||{})[idx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
@@ -496,7 +494,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
             }}>
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background:isDone?th.todoDone:th.headerBg,transition:"background .2s"}}>
                 {/* 커스텀 체크박스 */}
-                <div onPointerDown={e=>{e.preventDefault();isActiveToday&&onToggleFixed(item);}} style={{
+                <div onClick={()=>isActiveToday&&onToggleFixed(item)} style={{
                   width:20,height:20,borderRadius:6,flexShrink:0,cursor:isActiveToday?"pointer":"not-allowed",
                   border:`2px solid ${isDone?th.accent:th.border}`,
                   background:isDone?th.accent:"transparent",
@@ -528,8 +526,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
                 {["일","월","화","수","목","금","토"].map((d,di)=>{
                   const active=days.includes(di);
                   return (
-                    <button key={di} onPointerDown={e=>{
-                      e.preventDefault();
+                    <button key={di} onClick={()=>{
                       const next=active?days.filter(x=>x!==di):[...days,di].sort();
                       onSetFixedDays(item,next.length===7?[0,1,2,3,4,5,6]:next);
                     }} style={{
@@ -568,7 +565,7 @@ function TodoContent({ th, currentMonth, currentYear, selectedDay, selectedDayOf
         {(dayData.extraTodos||[]).map((item,idx)=>(
           <div key={idx} style={{borderRadius:14,overflow:"hidden",background:th.headerBg,border:`1px solid ${th.borderLight}`,boxShadow:`0 1px 6px rgba(${th.accentRgb},0.05)`}}>
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background:dayData.extraDone[idx]?th.todoDone:th.headerBg,transition:"background .2s"}}>
-              <div onPointerDown={e=>{e.preventDefault();onToggleExtra(idx);}} style={{
+              <div onClick={()=>onToggleExtra(idx)} style={{
                 width:20,height:20,borderRadius:6,flexShrink:0,cursor:"pointer",
                 border:`2px solid ${dayData.extraDone[idx]?th.accent:th.border}`,
                 background:dayData.extraDone[idx]?th.accent:"transparent",
@@ -1509,9 +1506,9 @@ export default function DiaryApp() {
             )}
 
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setShowEventModal(false)} style={{flex:1,padding:"11px",background:"transparent",color:th.accent,border:`1px solid ${th.border}`,borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,opacity:0.7,touchAction:"manipulation"}}>취소</button>
+              <button onClick={()=>setShowEventModal(false)} style={{flex:1,padding:"11px",background:"transparent",color:th.accent,border:`1px solid ${th.border}`,borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,opacity:0.7}}>취소</button>
 
-              <button onClick={addEvent} style={{flex:2,padding:"11px",background:th.accent,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:600,boxShadow:`0 4px 16px rgba(${th.accentRgb},0.35)`,touchAction:"manipulation",WebkitTapHighlightColor:"transparent"}}>{editingEventIdx!==null?"수정하기":"추가하기"}</button>
+              <button onClick={addEvent} style={{flex:2,padding:"11px",background:th.accent,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:600,boxShadow:`0 4px 16px rgba(${th.accentRgb},0.35)`}}>{editingEventIdx!==null?"수정하기":"추가하기"}</button>
             </div>
           </div>
         </div>
