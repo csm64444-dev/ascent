@@ -829,16 +829,14 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
           {/* 캔버스: innerRef와 동일 크기로 오버레이 */}
           <canvas ref={canvasRef} style={{position:"absolute",top:0,left:0,pointerEvents:"none",zIndex:2}}/>
           <canvas ref={overlayRef} style={{position:"absolute",top:0,left:0,pointerEvents:"none",zIndex:3}}/>
-          <div style={{position:"absolute",inset:0,zIndex:4,
-              cursor:mode==="eraser"?"cell":mode==="text"?"default":"crosshair",
-              touchAction:"none",
-              pointerEvents:mode==="text"?"none":"auto"
-            }}
-            onMouseDown={onDown}
-            onTouchStart={onDown}
-            onTouchMove={onMove}
-            onTouchEnd={onUp}
-          />
+          {isDrawMode&&(
+            <div style={{position:"absolute",inset:0,zIndex:4,cursor:mode==="eraser"?"cell":"crosshair",touchAction:"none"}}
+              onMouseDown={onDown}
+              onTouchStart={onDown}
+              onTouchMove={onMove}
+              onTouchEnd={onUp}
+            />
+          )}
         </div>
       </div>
 
