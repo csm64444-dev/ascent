@@ -822,24 +822,23 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
               resize:"none",fontFamily:"'Georgia',serif",fontSize:15,
               color:th.accent,lineHeight:"32px",outline:"none",
               padding:"10px 16px 120px",boxSizing:"border-box",
-              pointerEvents:isDrawMode?"none":"auto",
+              pointerEvents:"auto",
               position:"relative",zIndex:1,
-              touchAction:"auto",
-              WebkitUserSelect:"text",
-              userSelect:"text",
             }}
           />
           {/* 캔버스: innerRef와 동일 크기로 오버레이 */}
-          <canvas ref={canvasRef} style={{position:"absolute",top:0,left:0,pointerEvents:"none",zIndex:2,display:isDrawMode?"block":"none"}}/>
-          <canvas ref={overlayRef} style={{position:"absolute",top:0,left:0,pointerEvents:"none",zIndex:3,display:isDrawMode?"block":"none"}}/>
-          {isDrawMode&&(
-            <div style={{position:"absolute",inset:0,zIndex:4,cursor:mode==="eraser"?"cell":"crosshair",touchAction:"none"}}
-              onMouseDown={onDown}
-              onTouchStart={onDown}
-              onTouchMove={onMove}
-              onTouchEnd={onUp}
-            />
-          )}
+          <canvas ref={canvasRef} style={{position:"absolute",top:0,left:0,pointerEvents:"none",zIndex:2}}/>
+          <canvas ref={overlayRef} style={{position:"absolute",top:0,left:0,pointerEvents:"none",zIndex:3}}/>
+          <div style={{position:"absolute",inset:0,zIndex:4,
+              cursor:mode==="eraser"?"cell":mode==="text"?"default":"crosshair",
+              touchAction:"none",
+              pointerEvents:mode==="text"?"none":"auto"
+            }}
+            onMouseDown={onDown}
+            onTouchStart={onDown}
+            onTouchMove={onMove}
+            onTouchEnd={onUp}
+          />
         </div>
       </div>
 
