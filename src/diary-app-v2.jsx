@@ -354,7 +354,7 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
       </div>
 
       {/* 스냅 핸들 */}
-      <div onClick={()=>setSnap(s=>s<2?s+1:0)} style={{flexShrink:0,display:"flex",justifyContent:"center",alignItems:"center",gap:4,padding:"5px 0",cursor:"pointer"}}>
+      <div onClick={()=>setSnap(s=>s<1?s+1:0)} style={{flexShrink:0,display:"flex",justifyContent:"center",alignItems:"center",gap:4,padding:"5px 0",cursor:"pointer"}}>
         {[0,1].map(i=>(
           <div key={i} style={{width:snap===i?16:5,height:4,borderRadius:99,background:snap===i?th.accent:th.border,opacity:snap===i?1:0.4,transition:"all .3s"}}/>
         ))}
