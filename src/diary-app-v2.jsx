@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDI2rlZvBRIytsrziXxxI3hsHtlft-xots",
@@ -264,27 +264,31 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
       <div style={{padding:"0 16px 32px"}}>
         {!(dayData.events||[]).length
           ? <div style={{fontSize:13,color:th.accent,opacity:0.3,textAlign:"center",padding:"24px 0"}}>일정이 없어요</div>
-          : [...(dayData.events||[])].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99")).map((ev,idx)=>{
+          : (dayData.events||[]).map((ev,origIdx)=>{
               const c=EVENT_COLORS[ev.color]||EVENT_COLORS[0];
               return (
-                <div key={idx} style={{
+                <div key={origIdx} style={{
                   display:"flex",alignItems:"flex-start",gap:12,
                   padding:snap===1?"16px 0":"12px 0",
                   borderBottom:`1px solid ${th.borderLight}`,
                   transition:"all .2s",
-                  opacity:(dayData.eventDone||{})[idx]?0.45:1,
+                  opacity:(dayData.eventDone||{})[origIdx]?0.45:1,
                 }}>
                   {snap===1&&(
-                    <div onClick={e=>{e.stopPropagation();updateDayDone(idx);}} style={{
-                      width:22,height:22,borderRadius:6,flexShrink:0,marginTop:2,cursor:"pointer",
-                      border:`2px solid ${(dayData.eventDone||{})[idx]?"#1a1a1a":th.border}`,
-                      background:(dayData.eventDone||{})[idx]?"#1a1a1a":"transparent",
-                      display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
-                    }}>
-                      {(dayData.eventDone||{})[idx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
-                    </div>
+                    <button
+                      onClick={e=>{e.stopPropagation();updateDayDone(origIdx);}}
+                      style={{
+                        width:32,height:32,borderRadius:8,flexShrink:0,cursor:"pointer",
+                        border:`2px solid ${(dayData.eventDone||{})[origIdx]?"#1a1a1a":th.border}`,
+                        background:(dayData.eventDone||{})[origIdx]?"#1a1a1a":"transparent",
+                        display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
+                        touchAction:"manipulation",padding:0,
+                      }}
+                    >
+                      {(dayData.eventDone||{})[origIdx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
+                    </button>
                   )}
-                  <div onClick={()=>openEditEvent(idx)} style={{flex:1,display:"flex",gap:14,cursor:"pointer",minWidth:0}}>
+                  <div onClick={()=>openEditEvent(origIdx)} style={{flex:1,display:"flex",gap:14,cursor:"pointer",minWidth:0}}>
                     <div style={{width:44,flexShrink:0,textAlign:"right",paddingTop:2}}>
                       <span style={{fontSize:snap===1?14:12,fontWeight:600,color:th.accent,opacity:0.5}}>{ev.time||"종일"}</span>
                     </div>
@@ -295,7 +299,7 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                       {ev.note&&<div style={{fontSize:snap===1?13:11,color:th.accent,opacity:0.45,lineHeight:1.5}}>{ev.note}</div>}
                     </div>
                   </div>
-                  <button onClick={e=>{e.stopPropagation();removeEvent(idx);}} style={{
+                  <button onClick={e=>{e.stopPropagation();removeEvent(origIdx);}} style={{
                     background:"#fff0f0",border:"none",cursor:"pointer",
                     color:"#d04040",fontSize:13,padding:"3px 7px",
                     borderRadius:6,fontWeight:600,flexShrink:0,
@@ -756,8 +760,8 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
   return (
     <div
       style={{display:"flex",flexDirection:"column",height:"100%",background:th.cellBg}}
-      onTouchStart={e=>e.stopPropagation()}
-      onTouchEnd={e=>e.stopPropagation()}
+      onTouchStart={e=>{if(isDrawMode)e.stopPropagation();}}
+      onTouchEnd={e=>{if(isDrawMode)e.stopPropagation();}}
     >
       {/* 헤더 + 툴바 */}
       <div style={{padding:"14px 16px 0",flexShrink:0}}>
@@ -804,12 +808,13 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
       {/* 편집 영역 */}
       <div ref={scrollRef} style={{flex:1,overflowY:"auto",scrollbarWidth:"none",margin:"0 16px 16px",borderRadius:10,border:`1px solid ${th.border}`,touchAction:isDrawMode?"none":"auto"}}>
         {/* innerRef: textarea 높이만큼 늘어남 → 캔버스도 동일 크기 */}
-        <div ref={innerRef} style={{position:"relative",touchAction:isDrawMode?"none":"auto"}}>
+        <div ref={innerRef} style={{position:"relative",touchAction:isDrawMode?"none":"pan-y"}}>
           {/* 워터마크 */}
           <div style={{position:"absolute",bottom:10,right:10,fontSize:70,opacity:0.04,pointerEvents:"none",userSelect:"none",zIndex:0}}>{th.emoji}</div>
           {/* textarea: static 배치로 높이 자동 늘어남 */}
           <textarea
-            value={note||""} onChange={e=>onNoteChange(e.target.value)}
+            value={note||""}
+            onChange={e=>onNoteChange(e.target.value)}
             placeholder="오늘의 기록을 남겨보세요..."
             style={{
               display:"block",width:"100%",minHeight:"100vh",
@@ -817,7 +822,7 @@ function NoteContent({ th, currentYear, currentMonth, selectedDay, note, onNoteC
               resize:"none",fontFamily:"'Georgia',serif",fontSize:15,
               color:th.accent,lineHeight:"32px",outline:"none",
               padding:"10px 16px 120px",boxSizing:"border-box",
-              pointerEvents:isDrawMode?"none":"auto",
+              pointerEvents:"auto",
               position:"relative",zIndex:1,
             }}
           />
@@ -931,6 +936,8 @@ export default function DiaryApp() {
   const [newEventPlace,  setNewEventPlace]  = useState("");
   const [newEventNote,   setNewEventNote]   = useState("");
   const [editingEventIdx, setEditingEventIdx] = useState(null); // 수정 중인 일정 인덱스
+  const [newEventDate,   setNewEventDate]   = useState(""); // 일정 날짜 (다른 날 지정 시)
+  const [newEventEndDate,setNewEventEndDate]= useState(""); // 종료 날짜 (기간 일정)
   const [notifPerm,    setNotifPerm]    = useState(()=>getNotifPerm());
   const [storageOk,    setStorageOk]    = useState(true);
   const [user,         setUser]         = useState(null);  // Firebase 로그인 유저
@@ -965,16 +972,13 @@ export default function DiaryApp() {
     return () => unsub();
   }, []);
 
-  // ── Firestore 실시간 동기화 ──
+  // ── Firestore 로그인 시 1회 읽기 (실시간 동기화 제거) ──
   useEffect(()=>{
     if(!user) return;
     const ref = doc(db, "users", user.uid, "appData", "main");
-
-    // Firestore → 앱 (최초 1회만 로드, 이후는 앱→Firestore 방향)
-const unsub = onSnapshot(ref, snap => {
+    getDoc(ref).then(snap => {
       if(snap.exists()){
         const d = snap.data();
-        // 데이터가 실제로 있을 때만 덮어씀
         if(d.data && Object.keys(JSON.parse(d.data)).length > 0)
           setData(JSON.parse(d.data));
         if(d.fixedTodos && JSON.parse(d.fixedTodos).length > 0)
@@ -982,38 +986,57 @@ const unsub = onSnapshot(ref, snap => {
         if(d.fixedDays)  setFixedDays(JSON.parse(d.fixedDays));
         if(d.fixedAlarms)setFixedAlarms(JSON.parse(d.fixedAlarms));
       }
-    });
-    return () => unsub();
+    }).catch(e=>console.error("Firestore 읽기 실패", e));
   }, [user]);
 
-  // ── 앱 → Firestore (데이터 변경 시 저장) ──
-  const syncToFirebase = useCallback(async (newData, newFixedTodos, newFixedDays, newFixedAlarms) => {
-    if(!user) return;
+  // ── 앱 → Firestore (ref 기반으로 렌더링 충돌 방지) ──
+  const dataRef = useRef(data);
+  const fixedTodosRef = useRef(fixedTodos);
+  const fixedDaysRef = useRef(fixedDays);
+  const fixedAlarmsRef = useRef(fixedAlarms);
+  const userRef = useRef(user);
+
+  useEffect(()=>{ dataRef.current = data; }, [data]);
+  useEffect(()=>{ fixedTodosRef.current = fixedTodos; }, [fixedTodos]);
+  useEffect(()=>{ fixedDaysRef.current = fixedDays; }, [fixedDays]);
+  useEffect(()=>{ fixedAlarmsRef.current = fixedAlarms; }, [fixedAlarms]);
+  useEffect(()=>{ userRef.current = user; }, [user]);
+
+  const syncToFirebase = useCallback(async () => {
+    const u = userRef.current;
+    if(!u) return;
     setSyncing(true);
     try {
-      const ref = doc(db, "users", user.uid, "appData", "main");
-      // drawData 제외하고 저장 (용량 절약)
+      const ref = doc(db, "users", u.uid, "appData", "main");
       const slim = {};
-      for(const [k,v] of Object.entries(newData||data)){
+      for(const [k,v] of Object.entries(dataRef.current)){
         const { drawData, ...rest } = v;
         slim[k] = rest;
       }
       await setDoc(ref, {
         data: JSON.stringify(slim),
-        fixedTodos: JSON.stringify(newFixedTodos||fixedTodos),
-        fixedDays:  JSON.stringify(newFixedDays||fixedDays),
-        fixedAlarms:JSON.stringify(newFixedAlarms||fixedAlarms),
+        fixedTodos: JSON.stringify(fixedTodosRef.current),
+        fixedDays:  JSON.stringify(fixedDaysRef.current),
+        fixedAlarms:JSON.stringify(fixedAlarmsRef.current),
         updatedAt: Date.now(),
       }, { merge: true });
     } catch(e){ console.error("동기화 실패", e); }
     setSyncing(false);
-  }, [user, data, fixedTodos, fixedDays, fixedAlarms]);
+  }, []);
 
-  // data 변경 시 Firebase 동기화
-  useEffect(()=>{ if(user) syncToFirebase(data); }, [data]);
-  useEffect(()=>{ if(user) syncToFirebase(null, fixedTodos); }, [fixedTodos]);
-  useEffect(()=>{ if(user) syncToFirebase(null, null, fixedDays); }, [fixedDays]);
-  useEffect(()=>{ if(user) syncToFirebase(null, null, null, fixedAlarms); }, [fixedAlarms]);
+  // 30분마다 Firebase 동기화
+  useEffect(()=>{
+    if(!user) return;
+    const t = setInterval(()=>syncToFirebase(), 30*60*1000);
+    return ()=>clearInterval(t);
+  }, [user]);
+
+  // 앱 종료/탭 닫힐 때 즉시 저장
+  useEffect(()=>{
+    const handleUnload = ()=>syncToFirebase();
+    window.addEventListener("beforeunload", handleUnload);
+    return ()=>window.removeEventListener("beforeunload", handleUnload);
+  }, []);
 
   // localStorage 용량 체크
   useEffect(()=>{
@@ -1099,7 +1122,7 @@ const unsub = onSnapshot(ref, snap => {
 
   const addEvent=()=>{
     if(!newEventText.trim()) return;
-    const ev = {text:newEventText.trim(),time:newEventTime,color:newEventColor,place:newEventPlace.trim(),note:newEventNote.trim()};
+    const ev = {text:newEventText.trim(),time:newEventTime,color:newEventColor,place:newEventPlace.trim(),note:newEventNote.trim(),date:newEventDate,endDate:newEventEndDate};
     if (editingEventIdx !== null) {
       // 수정 모드
       const events = [...(dayData.events||[])];
@@ -1123,6 +1146,8 @@ const unsub = onSnapshot(ref, snap => {
     setNewEventColor(ev.color||0);
     setNewEventPlace(ev.place||"");
     setNewEventNote(ev.note||"");
+    setNewEventDate(ev.date||"");
+    setNewEventEndDate(ev.endDate||"");
     setEditingEventIdx(idx);
     setShowEventModal(true);
   };
@@ -1218,7 +1243,7 @@ const unsub = onSnapshot(ref, snap => {
     e.target.value = "";
   };
 
-  const calProps  = {th,currentYear,currentMonth,selectedDay,today,data,firstDay,daysInMonth,onPrevMonth:prevMonth,onNextMonth:nextMonth,onSelectDay:setSelectedDay,onAddEvent:()=>{setEditingEventIdx(null);setNewEventText("");setNewEventTime("");setNewEventColor(0);setNewEventPlace("");setNewEventNote("");setShowEventModal(true);},dayData,removeEvent,openEditEvent,updateDayDone};
+  const calProps  = {th,currentYear,currentMonth,selectedDay,today,data,firstDay,daysInMonth,onPrevMonth:prevMonth,onNextMonth:nextMonth,onSelectDay:setSelectedDay,onAddEvent:()=>{setEditingEventIdx(null);setNewEventText("");setNewEventTime("");setNewEventColor(0);setNewEventPlace("");setNewEventNote("");setNewEventDate("");setNewEventEndDate("");setShowEventModal(true);},dayData,removeEvent,openEditEvent,updateDayDone};
   const todoProps = {th,currentMonth,currentYear,selectedDay,selectedDayOfWeek,dayData,data,fixedTodos,fixedAlarms,fixedDays,editingFixed,achColor,achievement,doneTodos,allTodos,onToggleFixed:toggleFixed,onToggleExtra:toggleExtra,onAddFixed:addFixed,onRemoveFixed:removeFixed,onRenameFixed:renameFixed,onAddExtra:addExtra,onRemoveExtra:removeExtra,onSetEditingFixed:setEditingFixed,onSetFixedAlarm:setFixedAlarm,onSetExtraAlarm:setExtraAlarm,onSetFixedDays:setFixedDaysFn,newFixed,setNewFixed,newExtra,setNewExtra};
   const noteUndoRef  = useRef(null);
   const noteClearRef = useRef(null);
@@ -1378,7 +1403,65 @@ const unsub = onSnapshot(ref, snap => {
             {/* 시간 */}
             <div style={{marginBottom:10}}>
               <div style={{fontSize:11,color:th.accent,marginBottom:4,opacity:0.7}}>🕐 시간 <span style={{opacity:0.5}}>(설정 시 알람 🔔)</span></div>
-              <input type="time" value={newEventTime} onChange={e=>setNewEventTime(e.target.value)} style={{width:"100%",padding:"10px 14px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,fontFamily:"inherit",color:th.accent,outline:"none",boxSizing:"border-box"}}/>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <select
+                  value={newEventTime?newEventTime.split(":")[0]:""}
+                  onChange={e=>{
+                    const h=e.target.value;
+                    const m=newEventTime?newEventTime.split(":")[1]||"00":"00";
+                    setNewEventTime(h?`${h}:${m}`:"");
+                  }}
+                  style={{flex:1,padding:"12px 8px",fontSize:14,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:newEventTime?th.accent:"#aaa",outline:"none",fontFamily:"inherit"}}
+                >
+                  <option value="">시 선택</option>
+                  {Array(24).fill(null).map((_,i)=>(
+                    <option key={i} value={String(i).padStart(2,"0")}>{String(i).padStart(2,"0")}시</option>
+                  ))}
+                </select>
+                <span style={{color:th.accent,fontWeight:700,flexShrink:0}}>:</span>
+                <select
+                  value={newEventTime?newEventTime.split(":")[1]||"00":"00"}
+                  onChange={e=>{
+                    const m=e.target.value;
+                    const h=newEventTime?newEventTime.split(":")[0]:"";
+                    setNewEventTime(h?`${h}:${m}`:"");
+                  }}
+                  style={{flex:1,padding:"12px 8px",fontSize:14,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:th.accent,outline:"none",fontFamily:"inherit"}}
+                  disabled={!newEventTime?.split(":")[0]}
+                >
+                  {[0,5,10,15,20,25,30,35,40,45,50,55].map(m=>(
+                    <option key={m} value={String(m).padStart(2,"0")}>{String(m).padStart(2,"0")}분</option>
+                  ))}
+                </select>
+                {newEventTime&&(
+                  <button onClick={()=>setNewEventTime("")} style={{padding:"12px",borderRadius:12,border:`1px solid ${th.border}`,background:"transparent",color:"#d04040",cursor:"pointer",fontSize:13,fontFamily:"inherit",flexShrink:0}}>✕</button>
+                )}
+              </div>
+              {newEventTime&&(
+                <div style={{marginTop:6,padding:"8px 12px",background:"#f0f7ff",borderRadius:10,border:"1px solid #d0e8ff",fontSize:13,color:"#1a4a70",fontWeight:600}}>
+                  ⏰ {newEventTime} 으로 설정됩니다
+                </div>
+              )}
+            </div>
+
+            {/* 날짜 */}
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:11,color:th.accent,marginBottom:4,opacity:0.7}}>📅 날짜 <span style={{opacity:0.5}}>(기본: {currentMonth+1}월 {selectedDay}일)</span></div>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <input type="date"
+                  value={newEventDate||`${currentYear}-${String(currentMonth+1).padStart(2,"0")}-${String(selectedDay).padStart(2,"0")}`}
+                  onChange={e=>setNewEventDate(e.target.value)}
+                  style={{flex:1,padding:"10px 14px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:th.accent,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}
+                />
+                <span style={{color:th.accent,opacity:0.5,flexShrink:0,fontSize:11}}>~</span>
+                <input type="date"
+                  value={newEventEndDate}
+                  onChange={e=>setNewEventEndDate(e.target.value)}
+                  placeholder="종료일"
+                  style={{flex:1,padding:"10px 14px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:newEventEndDate?th.accent:"#aaa",outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}
+                />
+              </div>
+              {newEventEndDate&&<div style={{fontSize:10,color:th.accent,opacity:0.5,marginTop:4}}>📆 기간 일정으로 등록됩니다</div>}
             </div>
 
             {/* 장소 */}
@@ -1425,7 +1508,7 @@ const unsub = onSnapshot(ref, snap => {
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setShowEventModal(false)} style={{flex:1,padding:"11px",background:"transparent",color:th.accent,border:`1px solid ${th.border}`,borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,opacity:0.7}}>취소</button>
 
-              <button onClick={addEvent} style={{flex:2,padding:"11px",background:th.accent,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:600,boxShadow:`0 4px 16px rgba(${th.accentRgb},0.35)`}}>{editingEventIdx!==null?"수정하기":"추가하기"}</button>
+              <button onClick={addEvent} style={{flex:2,padding:"14px",background:th.accent,color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:14,fontWeight:600,boxShadow:`0 4px 16px rgba(${th.accentRgb},0.35)`,touchAction:"manipulation",minHeight:48}}>{editingEventIdx!==null?"수정하기":"추가하기"}</button>
             </div>
           </div>
         </div>
