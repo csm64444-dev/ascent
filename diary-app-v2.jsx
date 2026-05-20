@@ -264,7 +264,8 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
       <div style={{padding:"0 16px 32px"}}>
         {!(dayData.events||[]).length
           ? <div style={{fontSize:13,color:th.accent,opacity:0.3,textAlign:"center",padding:"24px 0"}}>일정이 없어요</div>
-          : [...(dayData.events||[])].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99")).map((ev,idx)=>{
+          : [...(dayData.events||[])].map((ev,i)=>({...ev,_origIdx:i})).sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99")).map((ev,idx)=>{
+              const origIdx = ev._origIdx;
               const c=EVENT_COLORS[ev.color]||EVENT_COLORS[0];
               return (
                 <div key={idx} style={{
@@ -272,23 +273,23 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                   padding:snap===1?"16px 0":"12px 0",
                   borderBottom:`1px solid ${th.borderLight}`,
                   transition:"all .2s",
-                  opacity:(dayData.eventDone||{})[idx]?0.45:1,
+                  opacity:(dayData.eventDone||{})[origIdx]?0.45:1,
                 }}>
                   {snap===1&&(
                     <button
-                      onClick={e=>{e.stopPropagation();updateDayDone(idx);}}
+                      onClick={e=>{e.stopPropagation();updateDayDone(origIdx);}}
                       style={{
                         width:32,height:32,borderRadius:8,flexShrink:0,cursor:"pointer",
-                        border:`2px solid ${(dayData.eventDone||{})[idx]?"#1a1a1a":th.border}`,
-                        background:(dayData.eventDone||{})[idx]?"#1a1a1a":"transparent",
+                        border:`2px solid ${(dayData.eventDone||{})[origIdx]?"#1a1a1a":th.border}`,
+                        background:(dayData.eventDone||{})[origIdx]?"#1a1a1a":"transparent",
                         display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s",
                         touchAction:"manipulation",padding:0,
                       }}
                     >
-                      {(dayData.eventDone||{})[idx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
+                      {(dayData.eventDone||{})[origIdx]&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
                     </button>
                   )}
-                  <div onClick={()=>openEditEvent(idx)} style={{flex:1,display:"flex",gap:14,cursor:"pointer",minWidth:0}}>
+                  <div onClick={()=>openEditEvent(origIdx)} style={{flex:1,display:"flex",gap:14,cursor:"pointer",minWidth:0}}>
                     <div style={{width:44,flexShrink:0,textAlign:"right",paddingTop:2}}>
                       <span style={{fontSize:snap===1?14:12,fontWeight:600,color:th.accent,opacity:0.5}}>{ev.time||"종일"}</span>
                     </div>
@@ -299,7 +300,7 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
                       {ev.note&&<div style={{fontSize:snap===1?13:11,color:th.accent,opacity:0.45,lineHeight:1.5}}>{ev.note}</div>}
                     </div>
                   </div>
-                  <button onClick={e=>{e.stopPropagation();removeEvent(idx);}} style={{
+                  <button onClick={e=>{e.stopPropagation();removeEvent(origIdx);}} style={{
                     background:"#fff0f0",border:"none",cursor:"pointer",
                     color:"#d04040",fontSize:13,padding:"3px 7px",
                     borderRadius:6,fontWeight:600,flexShrink:0,
