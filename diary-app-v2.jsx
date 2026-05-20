@@ -264,8 +264,7 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
       <div style={{padding:"0 16px 32px"}}>
         {!(dayData.events||[]).length
           ? <div style={{fontSize:13,color:th.accent,opacity:0.3,textAlign:"center",padding:"24px 0"}}>일정이 없어요</div>
-          : [...(dayData.events||[])].map((ev,i)=>({...ev,_origIdx:i})).sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99")).map((ev,idx)=>{
-              const origIdx = ev._origIdx;
+          : (dayData.events||[]).map((ev,origIdx)=>{
               const c=EVENT_COLORS[ev.color]||EVENT_COLORS[0];
               return (
                 <div key={origIdx} style={{
