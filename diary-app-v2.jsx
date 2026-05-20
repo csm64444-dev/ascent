@@ -268,7 +268,7 @@ function CalendarContent({ th, currentYear, currentMonth, selectedDay, today, da
               const origIdx = ev._origIdx;
               const c=EVENT_COLORS[ev.color]||EVENT_COLORS[0];
               return (
-                <div key={idx} style={{
+                <div key={origIdx} style={{
                   display:"flex",alignItems:"flex-start",gap:12,
                   padding:snap===1?"16px 0":"12px 0",
                   borderBottom:`1px solid ${th.borderLight}`,
