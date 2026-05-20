@@ -1411,7 +1411,7 @@ export default function DiaryApp() {
                     const m=newEventTime?newEventTime.split(":")[1]||"00":"00";
                     setNewEventTime(h?`${h}:${m}`:"");
                   }}
-                  style={{flex:1,padding:"10px 8px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:newEventTime?th.accent:"#aaa",outline:"none",fontFamily:"inherit",touchAction:"manipulation"}}
+                  style={{flex:1,padding:"12px 8px",fontSize:14,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:newEventTime?th.accent:"#aaa",outline:"none",fontFamily:"inherit"}}
                 >
                   <option value="">시 선택</option>
                   {Array(24).fill(null).map((_,i)=>(
@@ -1426,7 +1426,7 @@ export default function DiaryApp() {
                     const h=newEventTime?newEventTime.split(":")[0]:"";
                     setNewEventTime(h?`${h}:${m}`:"");
                   }}
-                  style={{flex:1,padding:"10px 8px",fontSize:13,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:th.accent,outline:"none",fontFamily:"inherit",touchAction:"manipulation"}}
+                  style={{flex:1,padding:"12px 8px",fontSize:14,border:`1px solid ${th.border}`,borderRadius:12,background:th.accentSoft,color:th.accent,outline:"none",fontFamily:"inherit"}}
                   disabled={!newEventTime?.split(":")[0]}
                 >
                   {[0,5,10,15,20,25,30,35,40,45,50,55].map(m=>(
@@ -1434,9 +1434,14 @@ export default function DiaryApp() {
                   ))}
                 </select>
                 {newEventTime&&(
-                  <button onClick={()=>setNewEventTime("")} style={{padding:"10px 10px",borderRadius:12,border:`1px solid ${th.border}`,background:"transparent",color:"#d04040",cursor:"pointer",fontSize:12,fontFamily:"inherit",flexShrink:0,touchAction:"manipulation"}}>✕</button>
+                  <button onClick={()=>setNewEventTime("")} style={{padding:"12px",borderRadius:12,border:`1px solid ${th.border}`,background:"transparent",color:"#d04040",cursor:"pointer",fontSize:13,fontFamily:"inherit",flexShrink:0}}>✕</button>
                 )}
               </div>
+              {newEventTime&&(
+                <div style={{marginTop:6,padding:"8px 12px",background:"#f0f7ff",borderRadius:10,border:"1px solid #d0e8ff",fontSize:13,color:"#1a4a70",fontWeight:600}}>
+                  ⏰ {newEventTime} 으로 설정됩니다
+                </div>
+              )}
             </div>
 
             {/* 날짜 */}
